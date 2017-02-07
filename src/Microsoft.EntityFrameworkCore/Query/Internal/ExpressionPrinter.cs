@@ -467,7 +467,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 var assignment = node.Bindings[i] as MemberAssignment;
                 if (assignment != null)
                 {
-                    _stringBuilder.Append(assignment.Member.Name + " = " + Visit(assignment.Expression));
+                    _stringBuilder.Append(assignment.Member.Name + " = ");
+                    Visit(assignment.Expression);
                     appendAction(i == node.Bindings.Count - 1 ? " " : ", ");
                 }
                 else
@@ -688,10 +689,20 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         /// </summary>
         protected override Expression VisitExtension(Expression node)
         {
+            //if (!node.CanReduce)
+            //{
+            //    StringBuilder.Append(" ---> ");
+            //}
+
             var qsre = node as QuerySourceReferenceExpression;
             if (qsre != null)
             {
                 StringBuilder.Append(qsre.ReferencedQuerySource.ItemName);
+
+                //if (!node.CanReduce)
+                //{
+                //    StringBuilder.Append(" <--- ");
+                //}
 
                 return node;
             }
@@ -701,10 +712,20 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             {
                 StringBuilder.Append(nullConditional.ToString());
 
+                //if (!node.CanReduce)
+                //{
+                //    StringBuilder.Append(" <--- ");
+                //}
+
                 return node;
             }
 
             UnhandledExpressionType(node);
+
+            //if (!node.CanReduce)
+            //{
+            //    StringBuilder.Append(" <--- ");
+            //}
 
             return node;
         }

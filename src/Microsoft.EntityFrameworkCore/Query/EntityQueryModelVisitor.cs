@@ -318,6 +318,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             _navigationRewritingExpressionVisitorFactory
                 .Create(this).Rewrite(queryModel, parentQueryModel: null);
 
+            entityEqualityRewritingExpressionVisitor.Rewrite(queryModel);
+
             QueryCompilationContext.Logger
                 .LogDebug(
                     CoreEventId.OptimizedQueryModel,
@@ -820,6 +822,11 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var outerKeySelectorExpression
                 = ReplaceClauseReferences(joinClause.OuterKeySelector, joinClause);
+
+            if (outerKeySelectorExpression.Type != joinClause.OuterKeySelector.Type)
+            {
+                outerKeySelectorExpression = Expression.Convert(outerKeySelectorExpression, joinClause.OuterKeySelector.Type);
+            }
 
             var innerSequenceExpression
                 = CompileJoinClauseInnerSequenceExpression(joinClause, queryModel);

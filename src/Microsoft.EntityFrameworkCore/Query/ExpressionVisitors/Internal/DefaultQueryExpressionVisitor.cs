@@ -83,29 +83,6 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected override Expression VisitExtension(Expression node)
-        {
-            var nullConditionalExpression = node as NullConditionalExpression;
-            if (nullConditionalExpression != null)
-            {
-                var newNullableCaller = Visit(nullConditionalExpression.NullableCaller);
-                var newCaller = Visit(nullConditionalExpression.Caller);
-                var newAccessOperation = Visit(nullConditionalExpression.AccessOperation);
-
-                return newNullableCaller != nullConditionalExpression.NullableCaller
-                    || newCaller != nullConditionalExpression.Caller
-                    || newAccessOperation != nullConditionalExpression.AccessOperation
-                    ? new NullConditionalExpression(newNullableCaller, newCaller, newAccessOperation)
-                    : node;
-            }
-
-            return base.VisitExtension(node);
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public static readonly MethodInfo GetParameterValueMethodInfo
             = typeof(DefaultQueryExpressionVisitor)
                 .GetTypeInfo().GetDeclaredMethod(nameof(GetParameterValue));
