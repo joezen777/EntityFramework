@@ -183,6 +183,11 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
             if (nullConditionalExpression != null)
             {
+                if (node.ToString() == "(?[x.OneToOne_Optional_FK].Name?)")
+                {
+
+                }
+
                 var newCaller = Visit(nullConditionalExpression.Caller);
 
                 if (newCaller != nullConditionalExpression.Caller
@@ -192,7 +197,8 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
                     if (newAccessOperation != nullConditionalExpression.AccessOperation)
                     {
-                        return newAccessOperation;
+                        return node.Type == newAccessOperation.Type ? newAccessOperation : Expression.Convert(newAccessOperation, node.Type);
+                        //return newAccessOperation;
                     }
                 }
             }

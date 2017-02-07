@@ -1384,32 +1384,32 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         public virtual void Optional_navigation_projected_into_DTO()
         {
             AssertQuery<Level1>(
-                  l1s =>
-                      l1s.Select(e => new MyOuterDto
-                      {
-                          Id = e.Id,
-                          Name = e.Name,
-                          Inner = e.OneToOne_Optional_FK != null ? new MyInnerDto
-                          {
-                              Id = (int?)e.OneToOne_Optional_FK.Id,
-                              Name = e.OneToOne_Optional_FK.Name
-                          } : null
-                      }),
-                  e => e.Id + " " + e.Name + " " + e.Inner,
-                  (e, a) =>
-                      {
-                          Assert.Equal(e.Id, a.Id);
-                          Assert.Equal(e.Name, a.Name);
-                          if (e.Inner == null)
-                          {
-                              Assert.Null(a.Inner);
-                          }
-                          else
-                          {
-                              Assert.Equal(e.Inner.Id, a.Inner.Id);
-                              Assert.Equal(e.Inner.Name, a.Inner.Name);
-                          }
-                      });
+                    l1s =>
+                        l1s.Select(e => new MyOuterDto
+                        {
+                            Id = e.Id,
+                            Name = e.Name,
+                            Inner = e.OneToOne_Optional_FK != null ? new MyInnerDto
+                            {
+                                Id = (int?)e.OneToOne_Optional_FK.Id,
+                                Name = e.OneToOne_Optional_FK.Name
+                            } : null
+                        }),
+                    e => e.Id + " " + e.Name + " " + e.Inner,
+                    (e, a) =>
+                        {
+                            Assert.Equal(e.Id, a.Id);
+                            Assert.Equal(e.Name, a.Name);
+                            if (e.Inner == null)
+                            {
+                                Assert.Null(a.Inner);
+                            }
+                            else
+                            {
+                                Assert.Equal(e.Inner.Id, a.Inner.Id);
+                                Assert.Equal(e.Inner.Name, a.Inner.Name);
+                            }
+                        });
         }
 
         public class MyOuterDto
@@ -3119,6 +3119,42 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     (e, a) => Assert.Equal(e.Id, a.Id));
         }
 
+
+        [ConditionalFact]
+        public virtual void Fubar()
+        {
+            using (var ctx = CreateContext())
+            {
+                //var query = from x in
+                //                (from l1 in ctx.LevelOne
+                //                 join l2 in ctx.LevelTwo on l1.Id equals l2.Level1_Optional_Id into grouping
+                //                 from l2 in grouping.DefaultIfEmpty()
+                //                 select ClientFoo(l1)).Take(2)
+                //            select x.Name;
+
+
+
+                var query = from x in
+                                (from l1 in ctx.LevelOne
+                                 join l2 in ctx.LevelTwo on l1.Id equals l2.Level1_Optional_Id into grouping
+                                 from l2 in grouping.DefaultIfEmpty()
+                                 select /*ClientFoo(*/l1/*)*/).Take(2)
+                            join l2_outer in ctx.LevelTwo on x.Id equals l2_outer.Level1_Optional_Id into grouping_outer
+                            from l2_outer in grouping_outer.DefaultIfEmpty()
+                            select l2_outer.Name;
+
+                //var query = ctx.LevelTwo.OrderBy(l1 => l1.OneToOne_Required_FK_Inverse.Name).Take(2).Select(x => x.OneToOne_Required_FK_Inverse.Name);
+                //var query = ctx.LevelOne.OrderBy(l1 => l1.OneToOne_Optional_FK.Name).Take(2).Select(x => x.OneToOne_Optional_FK.Name);
+                var result = query.ToList();
+            }
+        }
+
+
+        private Level1 ClientFoo(Level1 arg)
+        {
+            return arg;
+        }
+
         [ConditionalFact]
         public virtual void GroupJoin_on_left_side_being_a_subquery()
         {
@@ -3140,13 +3176,13 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     from l2 in l2s
                     join l1 in l1s.OrderBy(x => x.OneToOne_Optional_FK.Name).Take(2) on l2.Level1_Optional_Id equals l1.Id into grouping
                     from l1 in grouping.DefaultIfEmpty()
-                    select new { Id = l2.Id, Nane = l1 != null ? l1.Name : null },
+                    select new { Id = l2.Id, Name = l1 != null ? l1.Name : null },
                 (l1s, l2s) =>
                     from l2 in l2s
                     join l1 in l1s.OrderBy(x => Maybe(x.OneToOne_Optional_FK, () => x.OneToOne_Optional_FK.Name)).Take(2) 
                         on l2.Level1_Optional_Id equals l1.Id into grouping
                     from l1 in grouping.DefaultIfEmpty()
-                    select new { Id = l2.Id, Nane = l1 != null ? l1.Name : null },
+                    select new { Id = l2.Id, Name = l1 != null ? l1.Name : null },
                 e => e.Id);
         }
 

@@ -247,6 +247,8 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             Check.NotNull(querySource, nameof(querySource));
 
+            querySource = TryExtractJoinClauseFromGroupJoinSubquery(querySource);
+
             querySource
                 = (querySource as GroupJoinClause)?.JoinClause ?? querySource;
 
@@ -254,6 +256,36 @@ namespace Microsoft.EntityFrameworkCore.Query
             return QueriesBySource.TryGetValue(querySource, out selectExpression)
                 ? selectExpression
                 : QueriesBySource.Values.LastOrDefault(se => se.HandlesQuerySource(querySource));
+        }
+
+        private IQuerySource TryExtractJoinClauseFromGroupJoinSubquery(IQuerySource querySource)
+        {
+            var additionalFromClause = querySource as AdditionalFromClause;
+            if (additionalFromClause == null)
+            {
+                return querySource;
+            }
+
+            var subQueryExpression = additionalFromClause.FromExpression as SubQueryExpression;
+            if (subQueryExpression == null)
+            {
+                return querySource;
+            }
+
+            var subQueryModel = subQueryExpression.QueryModel;
+            if (subQueryModel.BodyClauses.Any() || subQueryModel.ResultOperators.Count != 1 || !(subQueryModel.ResultOperators.Last() is DefaultIfEmptyResultOperator))
+            {
+                return querySource;
+            }
+
+            var subQuerySelectorQsre = subQueryModel.SelectClause.Selector as QuerySourceReferenceExpression;
+            if (subQuerySelectorQsre == null)
+            {
+                return querySource;
+            }
+
+            return ((subQuerySelectorQsre.ReferencedQuerySource as MainFromClause)?.FromExpression as QuerySourceReferenceExpression)?.ReferencedQuerySource as GroupJoinClause
+                ?? querySource;
         }
 
         /// <summary>

@@ -318,6 +318,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             _navigationRewritingExpressionVisitorFactory
                 .Create(this).Rewrite(queryModel, parentQueryModel: null);
 
+            entityEqualityRewritingExpressionVisitor.Rewrite(queryModel);
+
             QueryCompilationContext.Logger
                 .LogDebug(
                     CoreEventId.OptimizedQueryModel,
@@ -821,6 +823,11 @@ namespace Microsoft.EntityFrameworkCore.Query
             var outerKeySelectorExpression
                 = ReplaceClauseReferences(joinClause.OuterKeySelector, joinClause);
 
+            if (outerKeySelectorExpression.Type != joinClause.OuterKeySelector.Type)
+            {
+                outerKeySelectorExpression = Expression.Convert(outerKeySelectorExpression, joinClause.OuterKeySelector.Type);
+            }
+
             var innerSequenceExpression
                 = CompileJoinClauseInnerSequenceExpression(joinClause, queryModel);
 
@@ -1019,6 +1026,11 @@ namespace Microsoft.EntityFrameworkCore.Query
             {
                 return;
             }
+            if (selectClause.ToString() == "select [x.OneToOne_Required_FK_Inverse].Name" ||
+                selectClause.ToString() == "select (?[x.OneToOne_Optional_FK].Name?)")
+            {
+
+            }
 
             var selector
                 = ReplaceClauseReferences(
@@ -1197,10 +1209,17 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             Check.NotNull(expression, nameof(expression));
 
+            if (expression.ToString() == "Convert((?[t.Gear].SquadId?))" || expression.ToString() == "[x.OneToOne_Required_FK_Inverse].Name" || expression.ToString() == "(?[x.OneToOne_Optional_FK].Name?)")
+            {
+
+            }
+
+
             expression
                 = _entityQueryableExpressionVisitorFactory
                     .Create(this, querySource)
                     .Visit(expression);
+
 
             expression
                 = _memberAccessBindingExpressionVisitorFactory

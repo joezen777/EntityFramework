@@ -77,6 +77,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             }
         }
 
+        public virtual bool HandlesQuerySource(IQuerySource querySource)
+        {
+            return _querySource == querySource;
+        }
+
         /// <summary>
         ///     Determines whether or not this TableExpressionBase handles the given query source.
         /// </summary>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
@@ -101,6 +102,22 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             }
 
             return base.VisitSqlFunction(sqlFunctionExpression);
+        }
+
+        protected override void VisitProjection([NotNull] IReadOnlyList<Expression> projections)
+        {
+            var newProjections = new List<Expression>(projections.Count);
+            foreach (var projection in projections)
+            {
+                var newProjection = (projection as AliasExpression)?.Expression?.NodeType == ExpressionType.Coalesce 
+                    && projection.Type.UnwrapNullableType() == typeof(bool)
+                        ? new ExplicitCastExpression(projection, projection.Type)
+                        : projection;
+
+                newProjections.Add(newProjection);
+            }
+
+            base.VisitProjection(newProjections);
         }
     }
 }
