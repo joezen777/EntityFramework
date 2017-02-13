@@ -3,32 +3,23 @@
 
 using System.Diagnostics;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace Microsoft.EntityFrameworkCore.Metadata.Internal
+namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public abstract class InternalMetadataBuilder<TMetadata> : InternalMetadataBuilder
-        where TMetadata : ConventionalAnnotatable
+    public static class ConventionBatchExtensions
     {
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected InternalMetadataBuilder([NotNull] TMetadata metadata)
-            : base(metadata)
-        {
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public new virtual TMetadata Metadata
-        {
-            [DebuggerStepThrough] get { return (TMetadata)base.Metadata; }
-        }
+        [DebuggerStepThrough]
+        public static InternalRelationshipBuilder Run(
+            [NotNull] this IConventionBatch batch, [NotNull] InternalRelationshipBuilder relationshipBuilder)
+            => batch.Run(relationshipBuilder.Metadata)?.Builder;
     }
 }
