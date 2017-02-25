@@ -10,5 +10,7 @@ namespace Microsoft.EntityFrameworkCore.Relational.Tests
     public class ApiConsistencyTest : ApiConsistencyTestBase
     {
         protected override Assembly TargetAssembly => typeof(RelationalDatabase).GetTypeInfo().Assembly;
+
+
     }
 }
