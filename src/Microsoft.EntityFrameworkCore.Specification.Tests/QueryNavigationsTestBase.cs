@@ -701,10 +701,20 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         [ConditionalFact]
         public virtual void Collection_select_nav_prop_single_or_default_then_nav_prop_nested()
         {
+            //AssertQuery<Customer, Order, string>(
+            //    (cs, os) => cs.Where(e => e.CustomerID.StartsWith("A"))
+            //        .Select(c => os.SingleOrDefault(o => o.OrderID == 10643).Customer.City));
             AssertQuery<Customer, Order, string>(
                 (cs, os) => cs.Where(e => e.CustomerID.StartsWith("A"))
-                    .Select(c => os.SingleOrDefault(o => o.OrderID == 10643).Customer.City));
+                    .Select(c => ClientSingleOrDefault<Order>(os, o => o.OrderID == 10643).Customer.City));
         }
+
+
+        private static Order ClientSingleOrDefault<T>(IQueryable<Order> source, System.Linq.Expressions.Expression<Func<Order, bool>> predicate)
+        {
+            return source.SingleOrDefault(predicate);
+        }
+
 
         [ConditionalFact]
         public virtual void Collection_select_nav_prop_first_or_default_then_nav_prop_nested_using_property_method()
