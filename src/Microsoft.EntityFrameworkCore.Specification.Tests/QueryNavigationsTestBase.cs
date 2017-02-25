@@ -707,6 +707,32 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         }
 
         [ConditionalFact]
+        public virtual void Busted1()
+        {
+            AssertQuery<Customer, Order, string>(
+                (cs, os) => cs.Select(c => os.FirstOrDefault().Customer.City));
+        }
+
+        [ConditionalFact]
+        public virtual void Busted2()
+        {
+            AssertQuery<Customer, Order, string>(
+                (cs, os) => cs.Select(c => os.SingleOrDefault(o => o.OrderID == 10643).Customer.City));
+        }
+
+        [ConditionalFact]
+        public virtual void Busted3()
+        {
+            AssertQuery<Customer, Order, string>(
+                (cs, os) => cs.Select(c => ClientFirstOrDefault(os).Customer.City));
+        }
+
+        public static T ClientFirstOrDefault<T>(IQueryable<T> source)
+        {
+            return source.FirstOrDefault();
+        }
+
+        [ConditionalFact]
         public virtual void Collection_select_nav_prop_first_or_default_then_nav_prop_nested_using_property_method()
         {
             AssertQuery<Customer, Order, string>(

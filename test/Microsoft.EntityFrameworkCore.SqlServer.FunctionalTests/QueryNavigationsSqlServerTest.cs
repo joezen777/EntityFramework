@@ -985,6 +985,22 @@ WHERE [o].[OrderID] = 10643",
                 Sql);
         }
 
+        public override void Busted1()
+        {
+            base.Busted1();
+        }
+
+        public override void Busted2()
+        {
+            base.Busted2();
+        }
+
+        public override void Busted3()
+        {
+            base.Busted3();
+        }
+
+
         public override void Collection_select_nav_prop_first_or_default_then_nav_prop_nested_using_property_method()
         {
             base.Collection_select_nav_prop_first_or_default_then_nav_prop_nested_using_property_method();
